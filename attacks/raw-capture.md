@@ -60,3 +60,16 @@
 - Durable artifact: mshta.exe execution with inline script / URL / .hta in CommandLine (EID 1)
 - Notes: high-signal, low-FP — mshta rarely runs benignly on a workstation. Stronger with ParentImage context (Office/script launching mshta = very suspicious).
 - Status: confirmed in Splunk (EID 1 ✓)
+
+## T1070.001 — Clear Windows Event Logs (Defense Evasion)
+- Test: ran directly (ART had no Windows yaml for T1070.001 in this pull)
+- Action: wevtutil cl System + wevtutil cl Security — clears event logs (anti-forensics)
+- Time run: 06/25/2026 02:49:16.474 PM
+- Telemetry seen (3 layers):
+  - Security EID 1102 (Security log cleared) — native, high-signal ✓
+  - Sysmon EID 1 — wevtutil.exe cl System/Security (process execution) ✓ — backstop
+  - PowerShell EID 4104 — script block logged the wevtutil command ✓
+  - EID 104 (System log cleared) NOT seen — System channel not forwarded (inputs.conf only has Security/Sysmon/PowerShell)
+- Durable artifact: 1102 (Security clear) primary; wevtutil execution via Sysmon EID 1 as backstop for logs not natively collected
+- Notes: HIGHEST-signal native detection (1102, near-zero FP). KEY: 1102 + all prior events survived in Splunk after local wipe — central SIEM defeats log-clearing. Defense-in-depth: caught the same action 3 ways; System-log clear (104) wasn't forwarded but Sysmon EID 1 still caught wevtutil running. Coverage lesson: you only detect channels you collect.
+- Status: confirmed in Splunk (1102 ✓, Sysmon EID 1 ✓, 4104 ✓; 104 N/A - channel not forwarded)
