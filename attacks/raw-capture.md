@@ -25,3 +25,12 @@
 - Durable artifact: task creation event (Security 4698), regardless of tool
 - Notes: 4698 needs "Other Object Access Events" auditing. Record whether it was on by default or had to be enabled.
 - Status: confirmed in Splunk (EID 1 ✓, 4698✓) 
+
+## T1033/T1016/T1018/T1082/T1087.002/T1069.002 — Discovery (Account/System/Network/Permission) (Discovery)
+- Test: T1033-1, T1016-1, T1018-1, T1082-1, T1087.002-1, T1069.002-1 (run as one burst)
+- Action: built-in read-only commands (whoami, ipconfig/arp, net view, systeminfo, net user/group /domain, net localgroup) to map identity, network, system, and accounts
+- Time run: 06/25/2026 08:42:51.743 AM
+- Telemetry seen: Sysmon EID 1 (process creation), 11 distinct discovery commands in one 5-min window; behavioral query distinct_cmds=11 (threshold 4) fired; naive query = per-command FP baseline
+- Durable artifact: NOT a single command — the behavioral burst (>=4 distinct discovery commands per host in 5 min)
+- Notes: domain sub-commands (T1087.002, T1069.002) RPC-failed (analyst=local, no domain rights) but still generated EID 1 events — detection fires on execution, not success. wmic sub-commands errored (removed in Win11), harmless. T1087.001 & T1069.001 had no Windows tests, excluded. User field shows NOT_TRANSLATED (Sysmon user-field parsing; Splunk Sysmon Add-on fixes it; non-blocking).
+- Status: confirmed in Splunk (EID 1 ✓, behavioral rule ✓)
