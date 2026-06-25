@@ -42,3 +42,12 @@
 - Durable artifact: comsvcs MiniDump command pattern (EID 1: comsvcs + MiniDump) — catches the attempt even when PPL blocks the access; complement with EID 10 read-access for non-PPL-blocked methods
 - Notes: EID 1 catches the tool execution (attempt); EID 10 catches successful memory read. PPL blocked the read, so only EID 1 fired — defense-in-depth working, detection still fires on the attempt. comsvcs+MiniDump is high-signal (almost nothing benign runs it).
 - Status: confirmed in Splunk (EID 1 ✓)
+
+## T1136.001 — Create Local Account (Persistence)
+- Test: #4 (create user via cmd) + #8 (create admin user)
+- Action: creates local backdoor accounts; test 8 also adds the account to Administrators
+- Time run: 06/25/2026 01:56:29.464 PM, 06/25/2026 01:56:47.644 PM
+- Telemetry seen: Security EID 4720 (accounts created: backdoor_svc, <test8 name>); EID 4732 (test 8 account added to Administrators)
+- Durable artifact: account creation (4720), regardless of tool; strongest signal = 4720 followed by 4732 within seconds (fresh account given admin)
+- Notes: ART tests start at #4 (1-3 non-Windows). Test 4 needed a complexity-compliant password (-InputArgs) because the domain password policy (GPO) rejected the weak default - incidental confirmation the domain enforces policy. High-signal, low-FP technique; 4720->4732 sequence = key attacker pattern.
+- Status: confirmed in Splunk (4720 ✓, 4732 ✓)
