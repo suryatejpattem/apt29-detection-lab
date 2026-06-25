@@ -1,0 +1,15 @@
+cd "C:\Users\SURYA TEJ\apt29-detection-lab"
+git add .
+git commit -m "    "
+git push
+
+
+(atomic test in installed on device to invoking is done and used only for that session and session closes need to import again)
+Set-ExecutionPolicy Bypass -Scope Process -Force
+Import-Module "C:\AtomicRedTeam\invoke-atomicredteam\Invoke-AtomicRedTeam.psd1" -Force
+Get-Command Invoke-AtomicTest
+
+
+(everytie session logged in windows enables the protection automamtically)
+Get-MpComputerStatus | Select-Object RealTimeProtectionEnabled
+Set-MpPreference -DisableRealtimeMonitoring $true
