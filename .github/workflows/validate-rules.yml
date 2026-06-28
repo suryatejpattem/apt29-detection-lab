@@ -33,15 +33,20 @@ jobs:
       - name: Convert all Sigma rules to Splunk SPL
         run: |
           set -e
+          PIPELINE="detections/splunk_winevent_pipeline.yaml"
           fail=0
           for rule in detections/*.yaml; do
+            # Skip the pipeline file itself - it is not a detection rule.
+            if [ "$rule" = "$PIPELINE" ]; then
+              continue
+            fi
             echo "=== Converting $rule ==="
             # Security-log rules (4698/4720/1102) use only the custom pipeline;
             # Sysmon-based rules use sysmon + custom pipeline.
             if grep -q "service: security" "$rule"; then
-              sigma convert -t splunk -p detections/splunk_winevent_pipeline.yaml "$rule" || fail=1
+              sigma convert -t splunk -p "$PIPELINE" "$rule" || fail=1
             else
-              sigma convert -t splunk -p sysmon -p detections/splunk_winevent_pipeline.yaml "$rule" || fail=1
+              sigma convert -t splunk -p sysmon -p "$PIPELINE" "$rule" || fail=1
             fi
           done
           if [ "$fail" -ne 0 ]; then
