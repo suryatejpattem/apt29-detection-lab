@@ -1,0 +1,51 @@
+name: Validate Sigma Rules
+
+# Runs on every push/PR that touches the rules, plus manual trigger.
+# Proves all Sigma rules still compile to Splunk SPL.
+on:
+  push:
+    paths:
+      - 'detections/**'
+      - '.github/workflows/validate-rules.yml'
+  pull_request:
+    paths:
+      - 'detections/**'
+  workflow_dispatch:
+
+jobs:
+  sigma-convert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install sigma-cli + plugins
+        run: |
+          pip install sigma-cli
+          sigma plugin install splunk
+          sigma plugin install sysmon
+
+      - name: Convert all Sigma rules to Splunk SPL
+        run: |
+          set -e
+          fail=0
+          for rule in detections/*.yaml; do
+            echo "=== Converting $rule ==="
+            # Security-log rules (4698/4720/1102) use only the custom pipeline;
+            # Sysmon-based rules use sysmon + custom pipeline.
+            if grep -q "service: security" "$rule"; then
+              sigma convert -t splunk -p detections/splunk_winevent_pipeline.yml "$rule" || fail=1
+            else
+              sigma convert -t splunk -p sysmon -p detections/splunk_winevent_pipeline.yml "$rule" || fail=1
+            fi
+          done
+          if [ "$fail" -ne 0 ]; then
+            echo "One or more rules failed to convert."
+            exit 1
+          fi
+          echo "All rules converted successfully."

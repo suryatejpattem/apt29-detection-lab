@@ -1,0 +1,7 @@
+# Primary - native Security log cleared
+index=main host=WS01 sourcetype="WinEventLog:Security" EventCode=1102
+| table _time, host, Account_Name
+
+# Backstop - wevtutil process execution (Sysmon EID 1)
+index=main host=WS01 sourcetype="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1 Image="*wevtutil*"
+| table _time, ParentImage, CommandLine

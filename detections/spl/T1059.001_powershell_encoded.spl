@@ -1,0 +1,9 @@
+# Layer 1 - flag detection (process creation)
+index=main host=WS01 sourcetype="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1 Image="*powershell*"
+(CommandLine="* -e *" OR CommandLine="* -enc*" OR CommandLine="* -EncodedCommand*")
+| table _time, ParentImage, CommandLine
+
+# Layer 2 - decoded-content inspection (Script Block Logging 4104)
+index=main host=WS01 sourcetype="WinEventLog:Microsoft-Windows-PowerShell/Operational" EventCode=4104
+(ScriptBlockText="*DownloadString*" OR ScriptBlockText="*DownloadFile*" OR ScriptBlockText="*IEX*" OR ScriptBlockText="*Invoke-Expression*" OR ScriptBlockText="*FromBase64String*" OR ScriptBlockText="*Net.WebClient*")
+| table _time, ScriptBlockText

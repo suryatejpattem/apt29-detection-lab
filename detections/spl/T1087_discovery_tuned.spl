@@ -1,0 +1,5 @@
+index=main host=WS01 sourcetype="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1
+(CommandLine="*whoami*" OR CommandLine="*localgroup*" OR CommandLine="* group *" OR CommandLine="* user *" OR CommandLine="*nltest*" OR CommandLine="*systeminfo*" OR CommandLine="*ipconfig*" OR CommandLine="*arp*" OR CommandLine="*hostname*" OR CommandLine="*net view*")
+| bin _time span=5m
+| stats dc(CommandLine) as distinct_cmds by host, _time
+| where distinct_cmds >= 5

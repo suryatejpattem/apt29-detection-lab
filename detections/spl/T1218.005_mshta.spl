@@ -1,0 +1,3 @@
+index=main host=WS01 sourcetype="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1 Image="*mshta.exe*"
+(CommandLine="*vbscript:*" OR CommandLine="*javascript:*" OR CommandLine="*http:*" OR CommandLine="*https:*" OR CommandLine="*.hta*")
+| table _time, ParentImage, Image, CommandLine
